@@ -1,0 +1,6 @@
+- 👋 Hi, I’m @SBose1258
+- 👀 I’m interested in Data
+- 🌱 I’m currently learning Python and DBMS
+- 💞️ I’m looking to collaborate on Data Analytics Projects
+- 📫 How to reach me via my email : subhabose128@gmail.com
+-
