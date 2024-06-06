@@ -1,4 +1,3 @@
-- 👋 Hi, I’m @SBose1258
-- 👀 I’m interested in Data
-- 💞️ I’m looking to collaborate on Data Projects
-- 📫 How to reach me via my email: subhabose2158@gmail.com
+Restaurant Rating Determinants and Recommendation System                                                                                   
+• Collaboratively co-developed a recommendation system for restaurants in Pune, India, while also examining the factors that impact restaurant ratings.
+• Tools Used: MySQL, Python and ML Algorithm (Decision Tree and SVM)
