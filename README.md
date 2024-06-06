@@ -1,4 +1,3 @@
-- 👋 Hi, I’m @SBose1258
-- 👀 I’m interested in Data
-- 💞️ I’m looking to collaborate on Data Projects
-- 📫 How to reach me via my email: subhabose2158@gmail.com
+Enhancing Trading Performance: Leveraging ARIMA-GARCH for Forecasting
+• Accurately forecasting volatility while understanding forecasted volatility is essential for hedging purposes and Prediction of reasons influencing traders profit opportunities.
+• Tools Used: R and Statistical Concepts (ARIMA, GARCH etc.)
