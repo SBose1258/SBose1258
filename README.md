@@ -11,3 +11,6 @@ Real-time Insights: Instantly query the dataset for insights and observe data tr
 Tools and Technologies
 Python: The backbone of our development, used for integrating the OpenAI API and building prompt flows.
 OpenAI API: Core API for natural language understanding, prompt engineering, and data interaction.
+
+
+update on Nov5,2024: Still figuring out the chatbot 
