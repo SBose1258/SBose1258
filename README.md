@@ -14,3 +14,4 @@ OpenAI API: Core API for natural language understanding, prompt engineering, and
 
 
 update on Nov5,2024: Still figuring out the chatbot 
+Update November 6, 2024: I figured out the chatbot, it is responding to general queries .. Yay!!!. need to specify it to the dataset.
