@@ -4,7 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv 
 import json
 import streamlit as st
-pip install --upgrade openai
+!pip install --upgrade openai
 load_dotenv()
 
 def csv_tool(filename : str):
