@@ -15,7 +15,8 @@ from langchain.llms import OpenAI
 #from apikey import apikey
 
 # Set OpenAI API key
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+#os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ['OPENAI_API_KEY'] = userdata.get('OPENAI_API_KEY')
 
 # Define Streamlit app
 def app():
