@@ -9,7 +9,7 @@ Original file is located at
 **INSTALLATIONS **
 """
 
-pip install langchain_community
+#pip install langchain_community
 from langchain import OpenAI
 pip install langchain_experimental
 from langchain_experimental.agents import create_pandas_dataframe_agent
