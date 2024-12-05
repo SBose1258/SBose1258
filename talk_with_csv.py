@@ -9,7 +9,11 @@ load_dotenv()
 def csv_tool(filename : str):
 
     df = pd.read_csv(filename)
-    return create_pandas_dataframe_agent(OpenAI(temperature=0), df, verbose=True)
+    llm=OpenAI(temperature=0, model_name="gpt-4o")
+    return create_pandas_dataframe_agent(llm, df, verbose=True)
+    
+    #return create_pandas_dataframe_agent(OpenAI(temperature=0), df, verbose=True)
+
 
 def ask_agent(agent, query):
     """
