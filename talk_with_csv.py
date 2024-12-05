@@ -94,7 +94,7 @@ def write_answer(response_dict: dict):
     Returns:
         None.
     """
-     if "error" in response_dict:
+    if "error" in response_dict:
         st.write(f"Error: {response_dict['error']}")
         return
 
