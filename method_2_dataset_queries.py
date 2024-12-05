@@ -12,7 +12,7 @@ import streamlit as st
 import pandas as pd
 from langchain.agents import create_pandas_dataframe_agent
 from langchain.llms import OpenAI
-from apikey import apikey
+#from apikey import apikey
 
 # Set OpenAI API key
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
