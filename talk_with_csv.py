@@ -74,7 +74,15 @@ def decode_response(response: str) -> dict:
     Returns:
         dict: dictionary with response data
     """
-    return json.loads(response)
+    try:
+        # Attempt to parse the response as JSON
+        response_dict = json.loads(response)
+        return response_dict
+    except json.JSONDecodeError as e:
+        print(f"Error decoding response: {e}")
+        print(f"Raw response was: {response}")
+        # Return an empty dictionary if parsing fails
+        return {"error": "Invalid response format"}
 
 def write_answer(response_dict: dict):
     """
@@ -86,6 +94,9 @@ def write_answer(response_dict: dict):
     Returns:
         None.
     """
+     if "error" in response_dict:
+        st.write(f"Error: {response_dict['error']}")
+        return
 
     # Check if the response is an answer.
     if "answer" in response_dict:
@@ -126,9 +137,9 @@ def write_answer(response_dict: dict):
 st.set_page_config(page_title="👨‍💻 Talk with your CSV")
 st.title("👨‍💻 Talk with your CSV")
 
-st.write("Please upload your CSV file below.")
+st.write("Please upload your file below.")
 
-data = st.file_uploader("Upload a CSV" , type="csv")
+data = st.file_uploader("Please Upload your File" , type="csv")
 
 query = st.text_area("Send a Message")
 
