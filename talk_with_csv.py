@@ -6,7 +6,9 @@ import json
 import streamlit as st
 load_dotenv()
 
-def csv_tool(filename : str):
+def csv_tool(filename):
+    if filename is None:  # Added check for file input
+        raise ValueError("No file uploaded.")
 
     df = pd.read_csv(filename)
     llm=OpenAI(temperature=0, model_name="gpt-4o")
@@ -54,104 +56,100 @@ def ask_agent(agent, query):
         Return all output as a string. Remember to encase all strings in the "columns" list and data list in double quotes. 
         For example: {"columns": ["Products", "Orders"], "data": [["51993Masc", 191], ["49631Foun", 152]]}
 
-        Now, let's tackle the query step by step. Here's the query for you to work on: 
+       Now, respond **ONLY** with a valid JSON string, without any additional text or formatting. Here's the query for you to work on: 
         """
         + query
     )
 
-    # Run the prompt through the agent and capture the response.
+     # Log the raw response to debug issues
     response = agent.run(prompt)
-
-    # Return the response converted to a string.
+    
+    # Debugging output
+    print(f"Raw response from agent: {response}")  
     return str(response)
 
+# Updated decode_response with improved error handling
 def decode_response(response: str) -> dict:
-    """converts the string response from the model to a dictionary object.
-
-    Args:
-        response (str): response from the model
-
-    Returns:
-        dict: dictionary with response data
-    """
     try:
-        # Attempt to parse the response as JSON
         response_dict = json.loads(response)
         return response_dict
     except json.JSONDecodeError as e:
         print(f"Error decoding response: {e}")
         print(f"Raw response was: {response}")
-        # Return an empty dictionary if parsing fails
-        return {"error": "Invalid response format"}
+        return {"error": "Invalid response format. Please ensure the model outputs valid JSON."}
+
 
 def write_answer(response_dict: dict):
-    """
-   Response from an agent to a Streamlit app.
-
-    Args:
-        response_dict: The response from the agent.
-
-    Returns:
-        None.
-    """
     if "error" in response_dict:
         st.write(f"Error: {response_dict['error']}")
         return
 
-    # Check if the response is an answer.
     if "answer" in response_dict:
         st.write(response_dict["answer"])
 
-    # Check if the response is a bar chart.
-    # Check if the response is a bar chart.
     if "bar" in response_dict:
         data = response_dict["bar"]
         try:
             df_data = {
-                    col: [x[i] if isinstance(x, list) else x for x in data['data']]
-                    for i, col in enumerate(data['columns'])
-                }       
+                col: [x[i] for x in data["data"]]  # Fixed data extraction
+                for i, col in enumerate(data["columns"])
+            }
             df = pd.DataFrame(df_data)
-            df.set_index("Products", inplace=True)
+            df.set_index(data["columns"][0], inplace=True)  # Set correct index column
             st.bar_chart(df)
-        except ValueError:
-            print(f"Couldn't create DataFrame from data: {data}")
-
-# Check if the response is a line chart.
+        except (ValueError, IndexError) as e:
+            print(f"Couldn't create bar chart: {e}")
+    
     if "line" in response_dict:
         data = response_dict["line"]
         try:
-            df_data = {col: [x[i] for x in data['data']] for i, col in enumerate(data['columns'])}
+            df_data = {
+                col: [x[i] for x in data["data"]]  # Fixed data extraction
+                for i, col in enumerate(data["columns"])
+            }
             df = pd.DataFrame(df_data)
-            df.set_index("Products", inplace=True)
+            df.set_index(data["columns"][0], inplace=True)  # Set correct index column
             st.line_chart(df)
-        except ValueError:
-            print(f"Couldn't create DataFrame from data: {data}")
+        except (ValueError, IndexError) as e:
+            print(f"Couldn't create line chart: {e}")
 
-
-    # Check if the response is a table.
     if "table" in response_dict:
         data = response_dict["table"]
-        df = pd.DataFrame(data["data"], columns=data["columns"])
-        st.table(df)
+        try:
+            df = pd.DataFrame(data["data"], columns=data["columns"])
+            st.table(df)
+        except ValueError as e:
+            print(f"Couldn't create table: {e}")
+
+
+
+
+
+
+
+
+#streamlit UI    
 st.set_page_config(page_title="👨‍💻 Talk with your File")
 st.title("👨‍💻 Talk with your File")
 
 st.write("Please upload your file below.")
 
-data = st.file_uploader("Please Upload your File" , type="csv")
+data = st.file_uploader("Please Upload your File", type="csv")
 
 query = st.text_area("Send a Message")
 
 if st.button("Submit Query", type="primary"):
-    # Create an agent from the CSV file.
-    agent = csv_tool(data)
+    try:
+        # Create an agent from the CSV file
+        agent = csv_tool(data)
 
-    # Query the agent.
-    response = ask_agent(agent=agent, query=query)
+        # Query the agent
+        response = ask_agent(agent=agent, query=query)
 
-    # Decode the response.
-    decoded_response = decode_response(response)
+        # Decode the response
+        decoded_response = decode_response(response)
 
-    # Write the response to the Streamlit app.
-    write_answer(decoded_response)
+        # Write the response to the Streamlit app
+        write_answer(decoded_response)
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
