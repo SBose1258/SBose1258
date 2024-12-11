@@ -78,7 +78,7 @@ def decode_response(response: str) -> dict:
         print(f"Raw response was: {response}")
         return {"error": "Invalid response format. Please ensure the model outputs valid JSON."}
 
-
+#write answer
 def write_answer(response_dict: dict):
     if "error" in response_dict:
         st.write(f"Error: {response_dict['error']}")
@@ -116,14 +116,16 @@ def write_answer(response_dict: dict):
     if "table" in response_dict:
         data = response_dict["table"]
         try:
+            # Create DataFrame from the response data
             df = pd.DataFrame(data["data"], columns=data["columns"])
+
+            # Attempt to convert numeric columns to proper types
+            for col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='ignore')  # Non-numeric columns remain unchanged
+
             st.table(df)
         except ValueError as e:
             print(f"Couldn't create table: {e}")
-
-
-
-
 
 
 
