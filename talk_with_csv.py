@@ -11,11 +11,8 @@ def csv_tool(filename):
         raise ValueError("No file uploaded.")
 
     df = pd.read_csv(filename)
-    llm=OpenAI(temperature=0, model_name="gpt-4o")
+    llm = OpenAI(temperature=0, model_name="gpt-4o")
     return create_pandas_dataframe_agent(llm, df, verbose=True)
-    
-    #return create_pandas_dataframe_agent(OpenAI(temperature=0), df, verbose=True)
-
 
 def ask_agent(agent, query):
     """
@@ -61,24 +58,22 @@ def ask_agent(agent, query):
         + query
     )
 
-     # Log the raw response to debug issues
+    # Log the raw response to debug issues
     response = agent.run(prompt)
-    
-    # Debugging output
-    print(f"Raw response from agent: {response}")  
-    return str(response)
+    print(f"Raw response from agent: {response.strip()}")  # Log the raw response
+
+    return str(response.strip())  # Strip whitespace before returning
 
 # Updated decode_response with improved error handling
 def decode_response(response: str) -> dict:
     try:
-        response_dict = json.loads(response)
+        response_dict = json.loads(response.strip())  # Strip whitespace before decoding
         return response_dict
     except json.JSONDecodeError as e:
         print(f"Error decoding response: {e}")
-        print(f"Raw response was: {response}")
+        print(f"Raw response was: {response.strip()}")  # Log the raw response for debugging
         return {"error": "Invalid response format. Please ensure the model outputs valid JSON."}
 
-#write answer
 def write_answer(response_dict: dict):
     if "error" in response_dict:
         st.write(f"Error: {response_dict['error']}")
@@ -110,48 +105,4 @@ def write_answer(response_dict: dict):
             df = pd.DataFrame(df_data)
             df.set_index(data["columns"][0], inplace=True)  # Set correct index column
             st.line_chart(df)
-        except (ValueError, IndexError) as e:
-            print(f"Couldn't create line chart: {e}")
-
-    if "table" in response_dict:
-        data = response_dict["table"]
-        try:
-            # Create DataFrame from the response data
-            df = pd.DataFrame(data["data"], columns=data["columns"])
-
-            # Attempt to convert numeric columns to proper types
-            for col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors='ignore')  # Non-numeric columns remain unchanged
-
-            st.table(df)
-        except ValueError as e:
-            print(f"Couldn't create table: {e}")
-
-
-
-
-#streamlit UI    
-st.set_page_config(page_title="👨‍💻 Talk with your File")
-st.title("👨‍💻 Talk with your File")
-
-st.write("Please upload your file below.")
-
-data = st.file_uploader("Please Upload your File", type="csv")
-
-query = st.text_area("Send a Message")
-
-if st.button("Submit Query", type="primary"):
-    try:
-        # Create an agent from the CSV file
-        agent = csv_tool(data)
-
-        # Query the agent
-        response = ask_agent(agent=agent, query=query)
-
-        # Decode the response
-        decoded_response = decode_response(response)
-
-        # Write the response to the Streamlit app
-        write_answer(decoded_response)
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+        except (ValueError
