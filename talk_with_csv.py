@@ -1,21 +1,19 @@
 from langchain import OpenAI
 from langchain.agents import create_pandas_dataframe_agent
 import pandas as pd
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 import json
 import streamlit as st
+
 load_dotenv()
 
 def csv_tool(filename):
-    if filename is None:  # Added check for file input
+    if filename is None:  # Check for file input
         raise ValueError("No file uploaded.")
 
     df = pd.read_csv(filename)
-    llm=OpenAI(temperature=0, model_name="gpt-4o")
+    llm = OpenAI(temperature=0, model_name="gpt-3.5-turbo")
     return create_pandas_dataframe_agent(llm, df, verbose=True)
-    
-    #return create_pandas_dataframe_agent(OpenAI(temperature=0), df, verbose=True)
-
 
 def ask_agent(agent, query):
     """
@@ -28,7 +26,6 @@ def ask_agent(agent, query):
     Returns:
         The response from the agent as a string.
     """
-    # Prepare the prompt with query guidelines and formatting
     prompt = (
         """
         Let's decode the way to respond to the queries. The responses depend on the type of information requested in the query. 
@@ -53,23 +50,48 @@ def ask_agent(agent, query):
         5. If the answer is not known or available, respond with:
            {"answer": "I do not know."}
 
-        Return all output as a string. Remember to encase all strings in the "columns" list and data list in double quotes. 
-        For example: {"columns": ["Products", "Orders"], "data": [["51993Masc", 191], ["49631Foun", 152]]}
+        Return all output as a valid JSON string. Use double quotes around all strings (e.g., {"columns": ["Products", "Orders"], "data": [["51993Masc", 191], ["49631Foun", 152]]}). Do not use single quotes.
 
        Now, respond **ONLY** with a valid JSON string, without any additional text or formatting. Here's the query for you to work on: 
         """
         + query
     )
 
-     # Log the raw response to debug issues
+    # Query the agent
     response = agent.run(prompt)
-    
-    # Debugging output
-    print(f"Raw response from agent: {response}")  
-    return str(response)
 
-# Updated decode_response with improved error handling
+    # Normalize the response to ensure valid JSON
+    response = normalize_response(response)
+
+    # Debugging output
+    print(f"Raw response after normalization: {response}")
+
+    return response
+
+def normalize_response(response: str) -> str:
+    """
+    Normalize the response string to ensure it adheres to valid JSON formatting.
+
+    Args:
+        response: The raw response string from the agent.
+
+    Returns:
+        A normalized JSON string.
+    """
+    # Replace single quotes with double quotes
+    response = response.replace("'", '"')
+    return response
+
 def decode_response(response: str) -> dict:
+    """
+    Decode the response string into a Python dictionary.
+
+    Args:
+        response: The response string to decode.
+
+    Returns:
+        A dictionary representation of the response.
+    """
     try:
         response_dict = json.loads(response)
         return response_dict
@@ -78,8 +100,13 @@ def decode_response(response: str) -> dict:
         print(f"Raw response was: {response}")
         return {"error": "Invalid response format. Please ensure the model outputs valid JSON."}
 
-
 def write_answer(response_dict: dict):
+    """
+    Write the response to the Streamlit UI based on its type.
+
+    Args:
+        response_dict: The decoded response dictionary.
+    """
     if "error" in response_dict:
         st.write(f"Error: {response_dict['error']}")
         return
@@ -90,28 +117,26 @@ def write_answer(response_dict: dict):
     if "bar" in response_dict:
         data = response_dict["bar"]
         try:
-            df_data = {
-                col: [x[i] for x in data["data"]]  # Fixed data extraction
+            df = pd.DataFrame({
+                col: [x[i] for x in data["data"]]  # Extract data column-wise
                 for i, col in enumerate(data["columns"])
-            }
-            df = pd.DataFrame(df_data)
+            })
             df.set_index(data["columns"][0], inplace=True)  # Set correct index column
             st.bar_chart(df)
         except (ValueError, IndexError) as e:
-            print(f"Couldn't create bar chart: {e}")
-    
+            st.write(f"Couldn't create bar chart: {e}")
+
     if "line" in response_dict:
         data = response_dict["line"]
         try:
-            df_data = {
-                col: [x[i] for x in data["data"]]  # Fixed data extraction
+            df = pd.DataFrame({
+                col: [x[i] for x in data["data"]]  # Extract data column-wise
                 for i, col in enumerate(data["columns"])
-            }
-            df = pd.DataFrame(df_data)
+            })
             df.set_index(data["columns"][0], inplace=True)  # Set correct index column
             st.line_chart(df)
         except (ValueError, IndexError) as e:
-            print(f"Couldn't create line chart: {e}")
+            st.write(f"Couldn't create line chart: {e}")
 
     if "table" in response_dict:
         data = response_dict["table"]
@@ -119,16 +144,9 @@ def write_answer(response_dict: dict):
             df = pd.DataFrame(data["data"], columns=data["columns"])
             st.table(df)
         except ValueError as e:
-            print(f"Couldn't create table: {e}")
+            st.write(f"Couldn't create table: {e}")
 
-
-
-
-
-
-
-
-#streamlit UI    
+# Streamlit UI
 st.set_page_config(page_title="👨‍💻 Talk with your File")
 st.title("👨‍💻 Talk with your File")
 
