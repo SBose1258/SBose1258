@@ -94,7 +94,7 @@ def write_answer(response_dict: dict):
             st.bar_chart(df)
         except (ValueError, IndexError) as e:
             print(f"Couldn't create bar chart: {e}")
-    
+
     if "line" in response_dict:
         data = response_dict["line"]
         try:
@@ -105,4 +105,13 @@ def write_answer(response_dict: dict):
             df = pd.DataFrame(df_data)
             df.set_index(data["columns"][0], inplace=True)  # Set correct index column
             st.line_chart(df)
-        except (ValueError)
+        except (ValueError, IndexError) as e:
+            print(f"Couldn't create line chart: {e}")
+
+    if "table" in response_dict:
+        data = response_dict["table"]
+        try:
+            df = pd.DataFrame(data["data"], columns=data["columns"])
+            st.table(df)
+        except (ValueError, IndexError) as e:
+            print(f"Couldn't create table: {e}")
