@@ -105,4 +105,4 @@ def write_answer(response_dict: dict):
             df = pd.DataFrame(df_data)
             df.set_index(data["columns"][0], inplace=True)  # Set correct index column
             st.line_chart(df)
-        except (ValueError
+        except (ValueError)
