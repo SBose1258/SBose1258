@@ -1,5 +1,0 @@
-langchain==0.0.146
-python-dotenv==1.0.0
-streamlit== 1.22.0
-openai == 0.27.0
-Tabulate 
